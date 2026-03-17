@@ -283,7 +283,7 @@ function NewsTab({ curItem, curCountry }) {
     setNews(null);
     const controller = new AbortController();
 
-    const url = `http://localhost:4000/api/news/${curItem.id}${
+    const url = `http://${import.meta.env.VITE_API_URL || 'http://localhost:4000/api'}/api/news/${curItem.id}${
       curCountry ? `?country=${encodeURIComponent(curCountry)}` : ''
     }`;
 
@@ -335,7 +335,7 @@ function AITab({ curItem, curCountry }) {
     setResult(null);
     const controller = new AbortController();
 
-    fetch('http://localhost:4000/api/ai/analyze', {
+    fetch(`http://${import.meta.env.VITE_API_URL || 'http://localhost:4000/api'}/api/ai/analyze`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       signal: controller.signal,

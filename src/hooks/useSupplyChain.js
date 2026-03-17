@@ -1,3 +1,4 @@
+const API = import.meta.env.VITE_API_URL || 'http://localhost:4000/api';
 import { useState } from 'react';
 import { ITEMS } from '../data/commodities';
 
