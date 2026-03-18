@@ -327,11 +327,26 @@ function NewsTab({ curItem, curCountry }) {
         <div
           key={i}
           onClick={() => n.url && window.open(n.url, '_blank')}
-          style={{ padding:'9px 14px', borderBottom:'0.5px solid #eee', cursor: n.url ? 'pointer' : 'default' }}
+          style={{
+            padding:'9px 14px',
+            borderBottom:'0.5px solid #eee',
+            cursor: n.url ? 'pointer' : 'default',
+          }}
         >
-          <div style={{ fontSize:'10px', color:'#888', marginBottom:'3px' }}>{n.source} · {n.time}</div>
-          <div style={{ fontSize:'12px', lineHeight:'1.45', marginBottom:'3px' }}>{n.title}</div>
-          <div style={{ fontSize:'11px', color:'#888', lineHeight:'1.5' }}>{n.summary}</div>
+          <div style={{ fontSize:'10px', color:'#888', marginBottom:'3px' }}>
+            {n.source} · {n.time}
+          </div>
+          <div style={{ fontSize:'12px', lineHeight:'1.45', marginBottom:'3px', fontWeight:'500' }}>
+            {n.title}
+          </div>
+          <div style={{ fontSize:'11px', color:'#888', lineHeight:'1.5' }}>
+            {n.summary}
+          </div>
+          {n.url && (
+            <div style={{ fontSize:'10px', color:'#3B8BD4', marginTop:'4px' }}>
+              기사 읽기 →
+            </div>
+          )}
         </div>
       ))}
     </div>
