@@ -222,7 +222,7 @@ function BgArrows({ curItem, strokeScale }) {
         return (
           <path key={`${exp.name}-${imp.name}`}
             d={`M${p.x},${p.y} Q${mx},${my} ${c.x},${c.y}`}
-            fill="none" stroke="#aaa" strokeWidth={0.8 * strokeScale}
+            fill="none" stroke="#aaa" strokeWidth={0.5 * strokeScale}
             strokeDasharray={`${5 * strokeScale} ${4 * strokeScale}`}
             opacity="0.2" markerEnd="url(#a-bg)" className="ta"
           />
@@ -252,7 +252,7 @@ function TradeArrows({ curItem, curCountry, direction, strokeScale }) {
         const [ax, ay] = isImp ? [sp.x, sp.y] : [fp.x, fp.y];
         const [bx, by] = isImp ? [fp.x, fp.y] : [sp.x, sp.y];
         const mx = (ax + bx) / 2, my = Math.min(ay, by) - 45;
-        const w = (0.8 + entry.pct / 18) * strokeScale;
+        const w = (0.5 + Math.pow(entry.pct / 100, 0.5) * 10) * strokeScale;
         const color  = isImp ? '#3B8BD4' : '#E8593C';
         const marker = isImp ? 'url(#a-imp)' : 'url(#a-exp)';
         return (
