@@ -5,7 +5,7 @@ const CAT_LABELS = {
   mfg: '🏭 제조품',
 };
 
-export default function Sidebar({ filteredItems, curItem, curCat, setCurCat, selectItem }) {
+export default function Sidebar({ filteredItems, curItem, curCat, setCurCat, selectItem, mobile = false }) {
   return (
   <div style={{
     width: mobile ? '100%' : '160px',
