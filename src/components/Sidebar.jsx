@@ -7,14 +7,15 @@ const CAT_LABELS = {
 
 export default function Sidebar({ filteredItems, curItem, curCat, setCurCat, selectItem }) {
   return (
-    <div style={{
-      width: '160px',
-      minWidth: '160px',
-      borderRight: '0.5px solid #ddd',
-      display: 'flex',
-      flexDirection: 'column',
-      overflow: 'hidden',
-    }}>
+  <div style={{
+    width: mobile ? '100%' : '160px',
+    minWidth: mobile ? 'unset' : '160px',
+    borderRight: mobile ? 'none' : '0.5px solid #ddd',
+    display: 'flex',
+    flexDirection: 'column',
+    overflow: 'hidden',
+    height: '100%',
+  }}>
       {/* 카테고리 탭 */}
       <div style={{ padding: '8px 6px', borderBottom: '0.5px solid #ddd' }}>
         {Object.entries(CAT_LABELS).map(([cat, label]) => (
