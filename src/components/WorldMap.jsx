@@ -63,7 +63,9 @@ export default function WorldMap({ curItem, curCountry, viewMode, activeTab, onS
       })
       .catch(err => console.error('지도 로드 실패:', err));
   }, []);
-
+// 터치 이벤트용
+  const lastTouchRef = useRef(null);
+  const lastPinchDistRef = useRef(null);
   // 휠 줌
   const onWheel = useCallback((e) => {
     e.preventDefault();
@@ -87,6 +89,8 @@ export default function WorldMap({ curItem, curCountry, viewMode, activeTab, onS
     return () => el.removeEventListener('wheel', onWheel);
   }, [onWheel]);
 
+
+
   // 드래그 패닝
   const onMouseDown = (e) => {
     if (e.button !== 0) return;
@@ -103,6 +107,68 @@ export default function WorldMap({ curItem, curCountry, viewMode, activeTab, onS
     setTransform(t => ({ ...t, x: dragStart.current.tx + dx, y: dragStart.current.ty + dy }));
   }, []);
   const onMouseUp = () => { isDragging.current = false; };
+  // 터치 핸들러
+  const onTouchStart = (e) => {
+    if (e.touches.length === 1) {
+      isDragging.current = true;
+      const rect = svgRef.current.getBoundingClientRect();
+      const scaleX = W / rect.width;
+      const scaleY = H / rect.height;
+      dragStart.current = {
+        x: e.touches[0].clientX,
+        y: e.touches[0].clientY,
+        tx: transform.x,
+        ty: transform.y,
+      };
+      lastTouchRef.current = { x: e.touches[0].clientX, y: e.touches[0].clientY };
+    } else if (e.touches.length === 2) {
+      isDragging.current = false;
+      const dx = e.touches[0].clientX - e.touches[1].clientX;
+      const dy = e.touches[0].clientY - e.touches[1].clientY;
+      lastPinchDistRef.current = Math.sqrt(dx*dx + dy*dy);
+    }
+  };
+
+  const onTouchMove = useCallback((e) => {
+    e.preventDefault();
+    if (e.touches.length === 1 && isDragging.current) {
+      const rect = svgRef.current.getBoundingClientRect();
+      const scaleX = W / rect.width;
+      const scaleY = H / rect.height;
+      const dx = (e.touches[0].clientX - dragStart.current.x) * scaleX;
+      const dy = (e.touches[0].clientY - dragStart.current.y) * scaleY;
+      setTransform(t => ({ ...t, x: dragStart.current.tx + dx, y: dragStart.current.ty + dy }));
+    } else if (e.touches.length === 2 && lastPinchDistRef.current) {
+      const dx = e.touches[0].clientX - e.touches[1].clientX;
+      const dy = e.touches[0].clientY - e.touches[1].clientY;
+      const dist = Math.sqrt(dx*dx + dy*dy);
+      const delta = dist / lastPinchDistRef.current;
+      lastPinchDistRef.current = dist;
+
+      // 두 손가락 중심점 기준으로 줌
+      const rect = svgRef.current.getBoundingClientRect();
+      const mx = ((e.touches[0].clientX + e.touches[1].clientX) / 2 - rect.left) / rect.width * W;
+      const my = ((e.touches[0].clientY + e.touches[1].clientY) / 2 - rect.top) / rect.height * H;
+
+      setTransform(t => {
+        const newK = Math.min(Math.max(t.k * delta, 1), 8);
+        const newX = mx - (mx - t.x) * (newK / t.k);
+        const newY = my - (my - t.y) * (newK / t.k);
+        return { k: newK, x: newX, y: newY };
+      });
+    }
+  }, []);
+  useEffect(() => {
+  const el = svgRef.current;
+  if (!el) return;
+  el.addEventListener('touchmove', onTouchMove, { passive: false });
+  return () => el.removeEventListener('touchmove', onTouchMove);
+}, [onTouchMove]);
+
+  const onTouchEnd = () => {
+    isDragging.current = false;
+    lastPinchDistRef.current = null;
+  };
 
   // 리셋
   const resetView = () => setTransform({ x: 0, y: 0, k: 1 });
@@ -115,11 +181,13 @@ export default function WorldMap({ curItem, curCountry, viewMode, activeTab, onS
       <svg
         ref={svgRef}
         viewBox={`0 0 ${W} ${H}`}
-        style={{ width: '100%', height: '100%', cursor: isDragging.current ? 'grabbing' : 'grab' }}
+        style={{ width: '100%', height: '100%', cursor: isDragging.current ? 'grabbing' : 'grab', touchAction: 'none' }}
         onMouseDown={onMouseDown}
         onMouseMove={onMouseMove}
         onMouseUp={onMouseUp}
         onMouseLeave={onMouseUp}
+        onTouchStart={onTouchStart}
+        onTouchEnd={onTouchEnd}
       >
         <defs>
           <marker id="a-imp" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse">
@@ -245,6 +313,7 @@ function TradeArrows({ curItem, curCountry, direction, strokeScale }) {
   if (!entries?.length) return null;
   const fp = ll2xy(focal.lat, focal.lng);
   if (!fp) return null;
+
   return (
     <>
       {entries.map(entry => {
@@ -255,17 +324,49 @@ function TradeArrows({ curItem, curCountry, direction, strokeScale }) {
         if (!sp) return null;
         const [ax, ay] = isImp ? [sp.x, sp.y] : [fp.x, fp.y];
         const [bx, by] = isImp ? [fp.x, fp.y] : [sp.x, sp.y];
-        const mx = (ax + bx) / 2, my = Math.min(ay, by) - 45;
+        const mx = (ax + bx) / 2;
+        const my = Math.min(ay, by) - 45;
         const w = (0.5 + Math.pow(entry.pct / 100, 0.5) * 10) * strokeScale;
         const color  = isImp ? '#3B8BD4' : '#E8593C';
         const marker = isImp ? 'url(#a-imp)' : 'url(#a-exp)';
+
+        // 파트너 국가가 지도 노드에 있는지 확인 (없으면 화살표에 이름 표시)
+        const isInRegions = curItem.regions.some(r => r.name === partnerName);
+        const labelX = (ax + mx) / 2;
+        const labelY = (ay + my) / 2 - 6 * strokeScale;
+
         return (
-          <path key={partnerName}
-            d={`M${ax},${ay} Q${mx},${my} ${bx},${by}`}
-            fill="none" stroke={color} strokeWidth={w}
-            strokeDasharray={`${5 * strokeScale} ${4 * strokeScale}`}
-            opacity="0.75" className="ta" markerEnd={marker}
-          />
+          <g key={partnerName}>
+            <path
+              d={`M${ax},${ay} Q${mx},${my} ${bx},${by}`}
+              fill="none" stroke={color} strokeWidth={w}
+              strokeDasharray={`${5 * strokeScale} ${4 * strokeScale}`}
+              opacity="0.75" className="ta" markerEnd={marker}
+            />
+            {/* 파트너 국가가 노드로 안 보일 때만 이름 표시 */}
+            {!isInRegions && (
+              <>
+                <rect
+                  x={labelX - partnerName.length * 3.5 * strokeScale}
+                  y={labelY - 8 * strokeScale}
+                  width={partnerName.length * 7 * strokeScale}
+                  height={14 * strokeScale}
+                  rx={3 * strokeScale}
+                  fill="white" opacity="0.85"
+                />
+                <text
+                  x={labelX} y={labelY + 2 * strokeScale}
+                  textAnchor="middle"
+                  fontSize={10 * strokeScale}
+                  fontWeight="500"
+                  fill={color}
+                  style={{ pointerEvents: 'none' }}
+                >
+                  {partnerName}
+                </text>
+              </>
+            )}
+          </g>
         );
       })}
     </>

@@ -31,71 +31,63 @@ function App() {
     if (isMobile) setMobileView('info');
   }
 
-  if (isMobile) {
+if (isMobile) {
     return (
-      <div style={{ display:'flex', flexDirection:'column', height:'100vh', overflow:'hidden' }}>
+      <div style={{ display:'flex', flexDirection:'column', height:'100vh', overflow:'hidden', background:'white' }}>
         {/* 상단 헤더 */}
-        <div style={{ padding:'10px 16px', borderBottom:'0.5px solid #ddd', flexShrink:0, display:'flex', alignItems:'center', justifyContent:'space-between', background:'white' }}>
-          <h1 style={{ fontSize:'14px', fontWeight:'500' }}>실물 경제 공급망 탐색기</h1>
-          <div style={{ display:'flex', border:'0.5px solid #ddd', borderRadius:'7px', overflow:'hidden' }}>
+        <div style={{ padding:'10px 16px 8px', borderBottom:'0.5px solid #ddd', flexShrink:0, display:'flex', alignItems:'center', justifyContent:'space-between' }}>
+          <h1 style={{ fontSize:'13px', fontWeight:'500' }}>실물 경제 공급망 탐색기</h1>
+          <div style={{ display:'flex', border:'0.5px solid #ddd', borderRadius:'6px', overflow:'hidden' }}>
             {[['production','생산'],['consumption','소비'],['net','알짜']].map(([v, label]) => (
               <button key={v} onClick={() => state.setViewMode(v)}
-                style={{ padding:'4px 8px', border:'none', fontSize:'11px', background: state.viewMode===v ? '#1a1a1a' : 'transparent', color: state.viewMode===v ? '#fff' : '#666', cursor:'pointer' }}>
+                style={{ padding:'3px 8px', border:'none', fontSize:'11px', background: state.viewMode===v ? '#1a1a1a' : 'transparent', color: state.viewMode===v ? '#fff' : '#666', cursor:'pointer' }}>
                 {label}
               </button>
             ))}
           </div>
         </div>
 
-        {/* 메인 콘텐츠 */}
-        <div style={{ flex:1, overflow:'hidden', position:'relative' }}>
-          {/* 목록 화면 */}
-          <div style={{ position:'absolute', inset:0, background:'white', transform: mobileView==='list' ? 'translateX(0)' : 'translateX(-100%)', transition:'transform .25s', overflow:'auto' }}>
-            <Sidebar
-              filteredItems={state.filteredItems}
-              curItem={state.curItem}
-              curCat={state.curCat}
-              setCurCat={state.setCurCat}
-              selectItem={handleSelectItem}
-              mobile={true}
-            />
+        {/* 품목 선택 바 (가로 스크롤) */}
+        <div style={{ flexShrink:0, borderBottom:'0.5px solid #ddd' }}>
+          {/* 카테고리 */}
+          <div style={{ display:'flex', gap:'6px', padding:'6px 12px', overflowX:'auto', borderBottom:'0.5px solid #eee' }}>
+            {[['all','전체'],['raw','⛏ 원자재'],['agri','🌾 농산물'],['mfg','🏭 제조품']].map(([cat, label]) => (
+              <button key={cat} onClick={() => state.setCurCat(cat)}
+                style={{ flexShrink:0, padding:'3px 10px', borderRadius:'14px', border:'0.5px solid #ddd', background: state.curCat===cat ? '#1a1a1a' : 'transparent', color: state.curCat===cat ? '#fff' : '#666', fontSize:'11px', cursor:'pointer', whiteSpace:'nowrap' }}>
+                {label}
+              </button>
+            ))}
           </div>
-
-          {/* 지도 화면 */}
-          <div style={{ position:'absolute', inset:0, transform: mobileView==='map' ? 'translateX(0)' : mobileView==='list' ? 'translateX(100%)' : 'translateX(-100%)', transition:'transform .25s' }}>
-            <WorldMap
-              curItem={state.curItem}
-              curCountry={state.curCountry}
-              viewMode={state.viewMode}
-              activeTab={state.activeTab}
-              onSelectCountry={handleSelectCountry}
-            />
-          </div>
-
-          {/* 정보 화면 */}
-          <div style={{ position:'absolute', inset:0, background:'white', transform: mobileView==='info' ? 'translateX(0)' : 'translateX(100%)', transition:'transform .25s', overflow:'auto', display:'flex', flexDirection:'column' }}>
-            <InfoPanel
-              curItem={state.curItem}
-              curCountry={state.curCountry}
-              activeTab={state.activeTab}
-              setActiveTab={state.setActiveTab}
-            />
+          {/* 품목 가로 스크롤 */}
+          <div style={{ display:'flex', gap:'6px', padding:'6px 12px', overflowX:'auto' }}>
+            {state.filteredItems.map(item => (
+              <button key={item.id} onClick={() => handleSelectItem(item.id)}
+                style={{ flexShrink:0, padding:'4px 10px', borderRadius:'14px', border:'0.5px solid #ddd', background: state.curItem?.id===item.id ? '#1a1a1a' : 'transparent', color: state.curItem?.id===item.id ? '#fff' : '#333', fontSize:'12px', cursor:'pointer', whiteSpace:'nowrap' }}>
+                {item.icon} {item.name}
+              </button>
+            ))}
           </div>
         </div>
 
-        {/* 하단 탭바 */}
-        <div style={{ display:'flex', borderTop:'0.5px solid #ddd', background:'white', flexShrink:0 }}>
-          {[
-            ['list',  '📋', '목록'],
-            ['map',   '🗺', '지도'],
-            ['info',  'ℹ️', '정보'],
-          ].map(([view, icon, label]) => (
-            <button key={view} onClick={() => setMobileView(view)}
-              style={{ flex:1, padding:'10px 0 8px', border:'none', background:'transparent', cursor:'pointer', display:'flex', flexDirection:'column', alignItems:'center', gap:'2px' }}>
-              <span style={{ fontSize:'18px' }}>{icon}</span>
-              <span style={{ fontSize:'10px', color: mobileView===view ? '#1a1a1a' : '#888', fontWeight: mobileView===view ? '500' : 'normal' }}>{label}</span>
-            </button>
-          ))}
+        {/* 지도 (상단 50%) */}
+        <div style={{ flex:'0 0 45vh', position:'relative', overflow:'hidden' }}>
+          <WorldMap
+            curItem={state.curItem}
+            curCountry={state.curCountry}
+            viewMode={state.viewMode}
+            activeTab={state.activeTab}
+            onSelectCountry={handleSelectCountry}
+          />
+        </div>
+
+        {/* 정보 패널 (하단 스크롤) */}
+        <div style={{ flex:1, overflow:'auto', borderTop:'0.5px solid #ddd', display:'flex', flexDirection:'column', minHeight:0 }}>
+          <InfoPanel
+            curItem={state.curItem}
+            curCountry={state.curCountry}
+            activeTab={state.activeTab}
+            setActiveTab={state.setActiveTab}
+          />
         </div>
       </div>
     );
