@@ -1,27 +1,36 @@
+import { useState, useEffect } from 'react';
+
 const API = import.meta.env.VITE_API_URL || 'http://localhost:4000/api';
-import { useState } from 'react';
-import { ITEMS } from '../data/commodities';
 
 export function useSupplyChain() {
-  const [curCat, setCurCat] = useState('all');
-  const [curItem, setCurItem] = useState(null);
+  const [allItems, setAllItems]     = useState([]);
+  const [curCat, setCurCat]         = useState('all');
+  const [curItem, setCurItem]       = useState(null);
   const [curCountry, setCurCountry] = useState(null);
-  const [viewMode, setViewMode] = useState('production');
-  const [activeTab, setActiveTab] = useState('overview');
+  const [viewMode, setViewMode]     = useState('production');
+  const [activeTab, setActiveTab]   = useState('overview');
+  const [loading, setLoading]       = useState(true);
 
-  const filteredItems = ITEMS.filter(
+  useEffect(() => {
+    fetch(`${API}/commodities`)
+      .then(r => r.json())
+      .then(data => { setAllItems(data); setLoading(false); })
+      .catch(() => setLoading(false));
+  }, []);
+
+  const filteredItems = allItems.filter(
     i => curCat === 'all' || i.cat === curCat
   );
 
-  function selectItem(id) {
-    setCurItem(ITEMS.find(i => i.id === id));
+  async function selectItem(id) {
+    const data = await fetch(`${API}/commodities/${id}`).then(r => r.json());
+    setCurItem(data);
     setCurCountry(null);
     setActiveTab('overview');
   }
 
   function selectCountry(name) {
     setCurCountry(name);
-    if (activeTab === 'overview') setActiveTab('overview');
   }
 
   function clearCountry() {
@@ -29,14 +38,16 @@ export function useSupplyChain() {
   }
 
   return {
+    allItems, filteredItems,
     curCat, setCurCat,
     curItem,
     curCountry,
     viewMode, setViewMode,
     activeTab, setActiveTab,
-    filteredItems,
+    loading,
     selectItem,
     selectCountry,
     clearCountry,
+    API,
   };
 }
