@@ -1,10 +1,12 @@
 import { useState, useEffect } from 'react';
+import PriceChart from './PriceChart';
 
 const TABS = [
   { id: 'overview', label: '개요' },
   { id: 'imports',  label: '수입 출처' },
   { id: 'exports',  label: '수출 대상' },
   { id: 'data',     label: '수급' },
+  { id: 'prices',   label: '시세' },
   { id: 'news',     label: '뉴스' },
   { id: 'ai',       label: 'AI' },
 ];
@@ -88,6 +90,17 @@ function TabContent({ curItem, curCountry, activeTab, setActiveTab }) {
   if (activeTab === 'exports')  return <TradeTab curItem={curItem} curCountry={curCountry} direction="export" />;
   if (activeTab === 'data')     return <DataTab curItem={curItem} curCountry={curCountry} />;
   if (activeTab === 'news')     return <NewsTab curItem={curItem} curCountry={curCountry} />;
+  if (activeTab === 'prices') {
+  // 국가 선택 상태면 시세 탭 숨김
+  if (curCountry) {
+    return (
+      <div style={{ padding:'20px', textAlign:'center', color:'#888', fontSize:'12px', lineHeight:'1.8' }}>
+        국가를 선택 해제하면<br/>시세 차트를 볼 수 있습니다
+      </div>
+    );
+  }
+  return <PriceChart curItem={curItem} />;
+}
   if (activeTab === 'ai')       return <AITab curItem={curItem} curCountry={curCountry} />;
   return null;
 }
