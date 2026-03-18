@@ -283,7 +283,7 @@ function NewsTab({ curItem, curCountry }) {
     setNews(null);
     const controller = new AbortController();
 
-    const url = `${import.meta.env.VITE_API_URL || 'http://localhost:4000/api'}news/${curItem.id}${
+    const url = `${import.meta.env.VITE_API_URL || 'http://localhost:4000/api'}/news/${curItem.id}${
       curCountry ? `?country=${encodeURIComponent(curCountry)}` : ''
     }`;
 
