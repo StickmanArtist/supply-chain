@@ -230,14 +230,15 @@ export default function WorldMap({ curItem, curCountry, viewMode, activeTab, onS
 
           {curItem && <BgArrows curItem={curItem} strokeScale={inverseScale} />}
 
-          {curItem && curCountry && (activeTab === 'imports' || activeTab === 'exports') && (
-            <TradeArrows
-              curItem={curItem}
-              curCountry={curCountry}
-              direction={activeTab === 'imports' ? 'import' : 'export'}
-              strokeScale={inverseScale}
-            />
-          )}
+      {curItem && curCountry && (activeTab === 'imports' || activeTab === 'exports') &&
+      curItem.regions.some(r => r.name === curCountry) && (
+      <TradeArrows
+        curItem={curItem}
+        curCountry={curCountry}
+        direction={activeTab === 'imports' ? 'import' : 'export'}
+        strokeScale={inverseScale}
+      />
+      )}
         </g>
 
         {/* 노드 — 변환 그룹 밖에서 렌더링해서 크기 고정 */}
