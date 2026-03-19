@@ -31,6 +31,7 @@ export function useSupplyChain() {
 
   function selectCountry(name) {
     setCurCountry(name);
+    setActiveTab('overview');
   }
 
   function clearCountry() {

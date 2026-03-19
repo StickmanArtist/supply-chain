@@ -1,8 +1,8 @@
+import { useState, useEffect } from 'react';
 import { useSupplyChain } from './hooks/useSupplyChain';
 import Sidebar from './components/Sidebar';
 import WorldMap from './components/WorldMap';
 import InfoPanel from './components/InfoPanel';
-import { useState, useEffect } from 'react';
 
 function useIsMobile() {
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
@@ -15,23 +15,21 @@ function useIsMobile() {
 }
 
 function App() {
-  const state = useSupplyChain();
+  const state    = useSupplyChain();
   const isMobile = useIsMobile();
-  const [mobileView, setMobileView] = useState('list'); // 'list' | 'map' | 'info'
+  const [mobileView, setMobileView] = useState('list');
 
-  // 품목 선택 시 지도로 이동
   async function handleSelectItem(id) {
     await state.selectItem(id);
     if (isMobile) setMobileView('map');
   }
 
-  // 국가 선택 시 정보 패널로 이동
   function handleSelectCountry(name) {
     state.selectCountry(name);
     if (isMobile) setMobileView('info');
   }
 
-if (isMobile) {
+  if (isMobile) {
     return (
       <div style={{ display:'flex', flexDirection:'column', height:'100vh', overflow:'hidden', background:'white' }}>
         {/* 상단 헤더 */}
@@ -47,9 +45,8 @@ if (isMobile) {
           </div>
         </div>
 
-        {/* 품목 선택 바 (가로 스크롤) */}
+        {/* 카테고리 + 품목 가로 스크롤 */}
         <div style={{ flexShrink:0, borderBottom:'0.5px solid #ddd' }}>
-          {/* 카테고리 */}
           <div style={{ display:'flex', gap:'6px', padding:'6px 12px', overflowX:'auto', borderBottom:'0.5px solid #eee' }}>
             {[['all','전체'],['raw','⛏ 원자재'],['agri','🌾 농산물'],['mfg','🏭 제조품']].map(([cat, label]) => (
               <button key={cat} onClick={() => state.setCurCat(cat)}
@@ -58,7 +55,6 @@ if (isMobile) {
               </button>
             ))}
           </div>
-          {/* 품목 가로 스크롤 */}
           <div style={{ display:'flex', gap:'6px', padding:'6px 12px', overflowX:'auto' }}>
             {state.filteredItems.map(item => (
               <button key={item.id} onClick={() => handleSelectItem(item.id)}
@@ -69,7 +65,7 @@ if (isMobile) {
           </div>
         </div>
 
-        {/* 지도 (상단 50%) */}
+        {/* 지도 */}
         <div style={{ flex:'0 0 45vh', position:'relative', overflow:'hidden' }}>
           <WorldMap
             curItem={state.curItem}
@@ -80,7 +76,7 @@ if (isMobile) {
           />
         </div>
 
-        {/* 정보 패널 (하단 스크롤) */}
+        {/* 정보 패널 */}
         <div style={{ flex:1, overflow:'auto', borderTop:'0.5px solid #ddd', display:'flex', flexDirection:'column', minHeight:0 }}>
           <InfoPanel
             curItem={state.curItem}
@@ -93,7 +89,7 @@ if (isMobile) {
     );
   }
 
-  // 데스크탑 레이아웃 (기존 그대로)
+  // 데스크탑
   return (
     <div style={{ display:'flex', flexDirection:'column', height:'100vh', overflow:'hidden' }}>
       <div style={{ padding:'10px 18px', borderBottom:'0.5px solid #ddd', flexShrink:0, display:'flex', alignItems:'center', justifyContent:'space-between' }}>

@@ -7,60 +7,45 @@ const CAT_LABELS = {
 
 export default function Sidebar({ filteredItems, curItem, curCat, setCurCat, selectItem, mobile = false }) {
   return (
-  <div style={{
-    width: mobile ? '100%' : '160px',
-    minWidth: mobile ? 'unset' : '160px',
-    borderRight: mobile ? 'none' : '0.5px solid #ddd',
-    display: 'flex',
-    flexDirection: 'column',
-    overflow: 'hidden',
-    height: '100%',
-  }}>
+    <div style={{
+      width: mobile ? '100%' : '160px',
+      minWidth: mobile ? 'unset' : '160px',
+      borderRight: mobile ? 'none' : '0.5px solid #ddd',
+      display: 'flex',
+      flexDirection: 'column',
+      overflow: 'hidden',
+      height: '100%',
+    }}>
       {/* 카테고리 탭 */}
-      <div style={{ padding: '8px 6px', borderBottom: '0.5px solid #ddd' }}>
+      <div style={{ padding:'8px 6px', borderBottom:'0.5px solid #ddd' }}>
         {Object.entries(CAT_LABELS).map(([cat, label]) => (
-          <button
-            key={cat}
-            onClick={() => setCurCat(cat)}
+          <button key={cat} onClick={() => setCurCat(cat)}
             style={{
-              display: 'block',
-              width: '100%',
-              textAlign: 'left',
-              padding: '5px 8px',
-              marginBottom: '2px',
-              borderRadius: '6px',
-              border: 'none',
-              background: curCat === cat ? '#1a1a1a' : 'transparent',
-              color: curCat === cat ? '#fff' : '#555',
-              fontSize: '12px',
-            }}
-          >
+              display:'block', width:'100%', textAlign:'left',
+              padding:'5px 8px', marginBottom:'2px', borderRadius:'6px',
+              border:'none',
+              background: curCat===cat ? '#1a1a1a' : 'transparent',
+              color: curCat===cat ? '#fff' : '#555',
+              fontSize:'12px', cursor:'pointer', fontFamily:'inherit',
+            }}>
             {label}
           </button>
         ))}
       </div>
 
       {/* 품목 리스트 */}
-      <div style={{ flex: 1, overflowY: 'auto', padding: '6px' }}>
+      <div style={{ flex:1, overflowY:'auto', padding:'6px' }}>
         {filteredItems.map(item => (
-          <button
-            key={item.id}
-            onClick={() => selectItem(item.id)}
+          <button key={item.id} onClick={() => selectItem(item.id)}
             style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: '7px',
-              width: '100%',
-              padding: '7px 9px',
-              borderRadius: '7px',
-              border: 'none',
-              background: curItem?.id === item.id ? '#eee' : 'transparent',
-              fontWeight: curItem?.id === item.id ? '500' : 'normal',
-              fontSize: '12px',
-              textAlign: 'left',
-            }}
-          >
-            <span style={{ fontSize: '15px' }}>{item.icon}</span>
+              display:'flex', alignItems:'center', gap:'7px',
+              width:'100%', padding:'7px 9px', borderRadius:'7px',
+              border:'none',
+              background: curItem?.id===item.id ? '#eee' : 'transparent',
+              fontWeight: curItem?.id===item.id ? '500' : 'normal',
+              fontSize:'12px', textAlign:'left', cursor:'pointer', fontFamily:'inherit',
+            }}>
+            <span style={{ fontSize:'15px' }}>{item.icon}</span>
             <span>{item.name}</span>
           </button>
         ))}
